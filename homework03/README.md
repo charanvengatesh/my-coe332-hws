@@ -1,46 +1,52 @@
-# Meteorite Landings Analysis
+# Meteorite Landings Analysis in Docker
 
-### Overview
+## Overview
 
-This repository contains scripts for analyzing meteorite landing data. The objective is to parse the data from a CSV file, calculate summary statistics, find the furthest pair of landing sites, and provide insights into the distribution of meteorite landings. This project serves as an educational tool for understanding data parsing, calculation of geographical distances, and basic data analysis principles.
+This repository houses a Python-based project for analyzing meteorite landing data. It aims to parse meteorite landings data from a CSV file, compute summary statistics, identify the furthest pair of landing sites, and analyze the distribution of meteorite landings. This Dockerized setup simplifies environment setup, ensuring consistency across different machines and platforms.
 
-### Contents
+## Contents
 
-- `ml_data_analysis.py`: The primary script that reads the CSV data, calculates summary statistics, and finds the furthest pair of meteorite landing sites.
-- `gcd_algorithm.py`: A secondary script that contains the great-circle distance function, used by the primary script to calculate distances between meteorite landing sites.
-- `test_ml_data_analysis.py`: Contains unit tests for `ml_data_analysis.py` to ensure the correctness of its functionality.
-- `test_gcd_algorithm.py`: Contains unit tests for the great-circle distance function in `gcd_algorithm.py`, ensuring accurate distance calculations.
-- `README.md`: Provides an overview of the project, instructions for setting up and running the scripts, and guidelines for interpreting the results.
+- `Dockerfile`: Instructions for building the Docker image for running the analysis.
+- `ml_data_analysis.py`: Main script for reading CSV data, computing summary statistics, and finding the furthest pair of meteorite landing sites.
+- `gcd_algorithm.py`: Contains the great-circle distance function for calculating distances between landing sites.
+- `test_ml_data_analysis.py` and `test_gcd_algorithm.py`: Unit tests for validating functionality and accuracy.
+- `README.md`: This file, explaining project setup, execution, and result interpretation.
 
+## Data Acquisition
 
+The Meteorite Landings dataset is used for this analysis, available from [NASA's open data portal](https://data.nasa.gov/Space-Science/Meteorite-Landings/gh4g-9sfh). Download the dataset and save it as `meteorite_landings.csv`.
 
-### Data Acquisition
+## Building the Docker Image
 
-To analyze meteorite landings, you will need the Meteorite Landings dataset available from NASA's open data portal. After downloading, place the CSV file in the same directory as the scripts.
+1. Clone this repository and navigate to the project directory.
+2. Build the Docker image with the following command:
 
-### Running the Code
-
-1. Ensure Python 3 and `pytest` are installed on your system.
-2. Clone this repository to your local machine.
-3. Navigate to the `homework02` directory.
-4. To run the primary analysis script, execute:
-
-```
-python meteorite_landings.py
+```bash
+docker build -t meteorite_analysis .
 ```
 
-5. To run the unit tests, ensure you are still in the `homework02` directory and execute:
+## Running the Containerized Code
 
+To run the analysis with the downloaded data, mount the data as a volume inside the container at runtime:
+
+```bash
+docker run -v /path/to/data_directory:/data meteorite_analysis
 ```
-pytest
+
+Replace /path/to/data_directory with the actual path to the directory containing meteorite_landings.csv.
+
+## Running Containerized Unit Tests
+To run the unit tests inside the container, override the default command:
+
+```bash
+docker run -v /path/to/data_directory:/data meteorite_analysis pytest
 ```
 
+## Software Diagram
+Below is a software diagram illustrating the components of this project, including the user interaction, Docker container, scripts, unit tests, and data flow.
 
-### Interpreting Results
+![alt text](./diagram.png)
 
-- The output of `meteorite_landings.py` will include the total and average mass of meteorites, as well as the furthest distance between two landing sites.
-- The unit tests validate the accuracy of distance calculations and the correctness of the data parsing and summary statistics functions. Passing tests indicate that the scripts are functioning as expected.
+This diagram shows the workflow from data acquisition to analysis, highlighting the Docker container's role in encapsulating the environment and dependencies.
 
-### Conclusion
 
-This project provides a hands-on approach to working with geographical data and performing basic analysis on meteorite landings. Through the use of Python scripts and unit testing, it offers insights into both software development and data analysis methodologies.

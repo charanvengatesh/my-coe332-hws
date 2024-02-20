@@ -1,72 +1,77 @@
 import csv
 import logging
-from typing import *
+from typing import List, Dict, Union
 from gcd_algorithm import great_circle_distance
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG,
+# Set up logging
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def read_data(file_path: str) -> List[Dict[str, Any]]:
+def read_csv(file_path: str) -> List[Dict[str, Union[str, float]]]:
     """
-    Read meteorite landings data from a CSV file.
+    Reads CSV data into a list of dictionaries.
 
-    Parameters:
-    - file_path: Path to the CSV file.
+    Args:
+        file_path (str): The path to the CSV file.
 
     Returns:
-    - A list of dictionaries, each representing a row from the CSV.
+        List[Dict[str, Union[str, float]]]: A list of dictionaries representing the CSV rows.
     """
     try:
         with open(file_path, mode='r', encoding='utf-8') as file:
-            csv_reader = csv.DictReader(file)
-            data = [row for row in csv_reader]
-            logging.debug(f"Data successfully read from {file_path}")
-            return data
-    except Exception as e:
-        logging.error(f"Failed to read data from {file_path}: {e}")
+            reader = csv.DictReader(file)
+            return [row for row in reader]
+    except FileNotFoundError:
+        logging.error(f"File not found: {file_path}")
         return []
 
 
-def summarize_mass(data: List[Dict[str, Any]]) -> None:
+def summarize_mass(records: List[Dict[str, str]]) -> None:
     """
-    Print summary statistics for meteorite masses.
+    Calculates and prints summary statistics for meteorite masses.
 
-    Parameters:
-    - data: List of meteorite landing data.
+    Args:
+        records (List[Dict[str, str]]): List of meteorite landing records.
     """
-    masses = [float(row['mass']) for row in data if row.get('mass')]
-    total_mass = sum(masses)
-    average_mass = total_mass / len(masses) if masses else 0
-    logging.debug(f"Total mass: {total_mass}, Average mass: {average_mass}")
-    print(f"Total Mass: {total_mass}, Average Mass: {average_mass}")
+    masses = [float(record['mass (g)'])
+              for record in records if record['mass (g)']]
+    if not masses:
+        logging.warning("No mass data available.")
+        return
+    min_mass = min(masses)
+    max_mass = max(masses)
+    avg_mass = sum(masses) / len(masses)
+    print(f"Mass Summary: Min = {min_mass}g, Max = {max_mass}g, Average = {avg_mass:.2f}g")
 
 
-def find_furthest_pair(data: List[Dict[str, Any]]) -> None:
+def calculate_distances(records: List[Dict[str, str]], sample_rate: int = 1) -> None:
     """
-    Find and print the furthest pair of meteorite landing sites.
+    Calculates and prints the distance between selected meteorite landing sites, based on a sampling rate.
 
-    Parameters:
-    - data: List of meteorite landing data.
+    Args:
+        records (List[Dict[str, str]]): List of meteorite landing records.
+        sample_rate (int): The sampling rate for printing distances.
+
     """
-    max_distance = 0
-    furthest_pair = (None, None)
-    for i in range(len(data)):
-        for j in range(i+1, len(data)):
-            lat1, lon1 = float(data[i]['reclat']), float(data[i]['reclong'])
-            lat2, lon2 = float(data[j]['reclat']), float(data[j]['reclong'])
+    logging.info("Calculating distances between selected landing sites...")
+    for i in range(0, len(records)-1, sample_rate):
+        try:
+            lat1, lon1 = float(records[i]['reclat']), float(
+                records[i]['reclong'])
+            lat2, lon2 = float(records[i+1]['reclat']
+                               ), float(records[i+1]['reclong'])
             distance = great_circle_distance(lat1, lon1, lat2, lon2)
-            if distance > max_distance:
-                max_distance = distance
-                furthest_pair = (data[i]['name'], data[j]['name'])
-    logging.debug(f"Furthest pair: {
-                  furthest_pair} with distance: {max_distance} km")
-    print(f"Furthest Pair: {furthest_pair}, Distance: {max_distance} km")
+            # Log the distance for every 'sample_rate' pair of records
+            print(f"Distance between {records[i]['name']} and {     records[i+1]['name']}: {distance:.2f} kilometers")
+        except ValueError as e:
+            logging.debug(f"Skipping calculation due to invalid data: {e}") 
 
 
-# Example usage
+
 if __name__ == "__main__":
-    data = read_data("meteorite_landings.csv")
+    file_path = '../data/meteorite_landings.csv'
+    data = read_csv(file_path)
     summarize_mass(data)
-    find_furthest_pair(data)
+    # Prints every 4000th data point as the default value
+    calculate_distances(data, sample_rate=4000)

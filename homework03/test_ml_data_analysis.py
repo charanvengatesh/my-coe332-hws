@@ -1,25 +1,30 @@
-import pytest
-from ml_data_analysis import summarize_mass, find_furthest_pair, read_data
+from gcd_algorithm import great_circle_distance
+from ml_data_analysis import read_csv, summarize_mass, calculate_distances
 
 
-def test_read_data():
-    # Assuming the test CSV has known contents
-    data = read_data("meteorite_landings.csv")
-    assert len(data) > 0
+def test_read_csv():
+    data = read_csv('../data/meteorite_landings.csv')
+    assert len(data) > 0, "Data should not be empty"
 
 
 def test_summarize_mass(capfd):
-    # Test that summarize_mass prints expected output
-    data = [{'mass': '10'}, {'mass': '20'}, {'mass': '30'}]
+    data = [{'mass (g)': '10'}, {'mass (g)': '20'}, {'mass (g)': '30'}]
     summarize_mass(data)
     out, err = capfd.readouterr()
-    assert "Total Mass: 60.0, Average Mass: 20.0" in out
+    expected_output = "Mass Summary: Min = 10.0g, Max = 30.0g, Average = 20.00g"
+    assert expected_output in out, "Output should contain the correct mass summary"
 
 
-def test_find_furthest_pair(capfd):
-    # Test that find_furthest_pair prints expected output
-    data = [{'name': 'Site1', 'reclat': '0', 'reclong': '0'},
-            {'name': 'Site2', 'reclat': '90', 'reclong': '0'}]
-    find_furthest_pair(data)
+def test_calculate_distances(capfd):
+    data = [
+        {'name': 'Site1', 'reclat': '0', 'reclong': '0'},
+        {'name': 'Site2', 'reclat': '0', 'reclong': '180'}
+    ]
+    calculate_distances(data)
     out, err = capfd.readouterr()
-    assert "Distance: 10007.543398010284 km" in out
+
+    # Format the expected string to match the logging format in calculate_distances function
+    expected_distance_km = great_circle_distance(0, 0, 0, 180)
+    expected_distance_str = f"Distance between Site1 and Site2: {expected_distance_km:.2f} kilometers"
+    assert expected_distance_str in out, f"Output should contain the correct distance calculation: {expected_distance_str}"
+
