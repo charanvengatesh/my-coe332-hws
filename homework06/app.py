@@ -8,7 +8,7 @@ url = "https://g-a8b222.dd271.03c0.data.globus.org/pub/databases/genenames/hgnc/
 
 
 app = Flask(__name__)
-r = redis.Redis(host='127.0.0.1', port=6379, db=0)
+r = redis.Redis(host='redis-db', port=6379, db=0)
 
 
 @app.route('/data', methods=['POST'])
