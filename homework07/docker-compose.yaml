@@ -1,0 +1,27 @@
+version: '3'
+services:
+  redis-db:
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - ./data:/data
+    command: ["--save", "1", "1"]
+
+  flask-app:
+    build: .
+    depends_on:
+      - redis-db
+    ports:
+      - 3000:3000
+    environment:
+      - REDIS_IP=redis-db
+    command: python src/api.py
+
+  worker:
+    build: .
+    depends_on:
+      - redis-db
+    environment:
+      - REDIS_IP=redis-db
+    command: python src/worker.py
